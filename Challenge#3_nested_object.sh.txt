@@ -1,0 +1,19 @@
+#!/bin/bash
+object='{"x":{"y":{"z":"a"}}}'
+key='x/y/z'
+
+function get_value_from_nested_object() {
+  local object=$1
+  local key=$2
+  local current_obj=$object
+
+  IFS='/' read -ra keys <<< "$key"
+  for i in "${keys[@]}"; do
+    current_obj=$(echo $current_obj | jq -r ".$i")
+  done
+
+  echo $current_obj
+}
+
+value=$(get_value_from_nested_object "$object" "$key")
+echo "Value: $value"
