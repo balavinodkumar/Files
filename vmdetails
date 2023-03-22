@@ -1,0 +1,32 @@
+pipeline {
+agent any
+stages {
+stage('find vm details') {
+steps {
+echo '#!/bin/bash
+# Function to retrieve a specific data key
+get_metadata_key() {
+  key=$1
+  value=$(curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/$key")
+  echo $value
+}
+
+# Print the list of available metadata keys
+echo "Available metadata keys for currently logged in instance are below :"
+curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/" | tr '/' '\n'
+
+# Ask the user for the metadata keys they want to retrieve
+IFS=' ' read -p "Enter the metadata keys you want to retrieve (give a space if you wanna to try with multiple inputs): " metadata_keys
+
+# Convert the input string into an array of keys
+read -a metadata_keys_array <<< "$metadata_keys"
+
+# Loop through the array of keys and retrieve their values
+for metadata_key in "${metadata_keys_array[@]}"; do
+  metadata_value=$(get_metadata_key $metadata_key)
+  echo "Metadata value for key $metadata_key: $metadata_value"
+done'
+}
+}
+}
+}
