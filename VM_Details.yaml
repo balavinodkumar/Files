@@ -1,0 +1,27 @@
+# YAML equivalent of the Bash script to retrieve metadata keys from a Google Cloud instance
+
+# Define a function to retrieve a specific data key
+get_metadata_key:
+  command: "curl -H \"Metadata-Flavor: Google\" \"http://metadata.google.internal/computeMetadata/v1/instance/$key\""
+  return: stdout
+
+# Print the list of available metadata keys
+echo: "Available metadata keys for currently logged in instance are below:"
+run:
+  command: "curl -H \"Metadata-Flavor: Google\" \"http://metadata.google.internal/computeMetadata/v1/instance/\" | tr '/' '\\n'"
+
+# Ask the user for the metadata keys they want to retrieve
+read:
+  prompt: "Enter the metadata keys you want to retrieve (give a space if you wanna to try with multiple inputs): "
+  var: metadata_keys
+
+# Convert the input string into an array of keys
+metadata_keys_array: "{metadata_keys}".split()
+
+# Loop through the array of keys and retrieve their values
+for_loop:
+  iterator: metadata_key
+  iterable: metadata_keys_array
+  commands:
+    - metadata_value: get_metadata_key(metadata_key)
+    - echo: "Metadata value for key {metadata_key}: {metadata_value}"
